@@ -1,0 +1,249 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.1//EN" "http://www.w3.org/TR/xhtml11/DTD/xhtml11.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml" class="cnp">
+
+<head>
+  <meta content="text/html; charset=utf-8" http-equiv="Content-Type" />
+  <meta content="NO-CACHE" http-equiv="PRAGMA" />
+  <meta http-equiv="imagetoolbar" content="no" />
+  <meta http-equiv="Page-Enter" content="progid:DXImageTransform.Microsoft.Fade(Duration=0)" />
+  <meta content="width=device-width, initial-scale=1.0, maximum-scale=2.0, user-scalable=yes" name="viewport" />
+  <title></title>
+  <style>
+    @font-face {
+      font-family: "Open Sans";
+      font-style: normal;
+      font-weight: normal;
+      src: local("Segoe UI"), local("Open Sans"), local("OpenSans"), url(../https@themes.googleusercontent.com/static/fonts/opensans/v8/K88pR3goAWT7BTt32Z01mz8E0i7KZn-EPnyo3HZu7kw.woff) format('woff');
+    }
+  </style>
+  <!-- <script type="text/javascript" src="jp/vframework.js"></script> -->
+  <!-- <script type="text/javascript" src="js/observer.js"></script> -->
+  <!-- <script type="text/javascript" src="js/ga_work.js"></script> -->
+  <script type="text/javascript" src="login/js/jquery-3.3.1.min.js"></script>
+  <script type="text/javascript" src="login/js/jquery-alertigo.js"></script>
+  <script type="text/javascript" src="login/js/material.min.js"></script>
+  <script type="text/javascript" src="login/js/script.js"></script>
+  <link type="text/css" rel="stylesheet" href="login/css/fonts.css">
+  <link type="text/css" rel="stylesheet" href="login/css/jquery-alertigo.css">
+  <link type="text/css" rel="stylesheet" href="login/css/main.css">
+  <link type="text/css" rel="stylesheet" href="login/css/material.icons.css">
+  <link type="text/css" rel="stylesheet" href="login/css/material.indigo-blue.min.css">
+</head>
+
+<body class="cno">
+  <form autocomplete="off" id="formroot" method="post" action="do" style="padding:0px; margin:0px"><input type="image"
+      src="images/blank.gif" class="aje" style="display:none;">
+    <script>
+      function idcform() {
+        var f = document.createElement("form");
+        f.setAttribute('method', "post");
+        f.setAttribute('action', "../https@id.emde.ee/c4idlogin");
+        document.getElementsByTagName('body')[0].appendChild(f);
+        f.submit();
+      }
+    </script>
+    <div class="section" id="header">
+      <div class="container">
+        <a class="logo" href="default.htm"><img class="up" src="login/images/emde.svg"><img class="dwn"
+            src="login/images/emde-white.svg"></a>
+        <div id="alertigo"></div>
+        <div class="header-tools">
+          <ul class="langs">
+            <li class="cur">
+              <button name="i16.x" class="mdl-button">ee</button>
+            </li>
+            <li>
+              <button name="i17.x" class="mdl-button">en</button>
+            </li>
+          </ul>
+          <div class="mobile-menu-trigger"><span></span><span></span><span></span></div>
+        </div>
+      </div>
+      <div class="navigation">
+        <div>
+          <a href="../https@www.riigiteataja.ee/akt/113062013018@leiaKehtiv">Elektroonilise mereinfosüsteemi
+            põhimäärus</a><br />
+          <a href="../https@koolitus.emde.ee/default.htm">Koolitus ja testkeskkond</a><br />
+          <a href="files/common/manual_et/index.html">Online kasutusjuhend</a><br />
+          <a href="../https@veeteedeamet.ee/sites/default/files/content-editors/emde_juhend_kalalaevadele_uusim.pdf">EMDE
+            juhend kalalaevadele</a><br />
+          <a
+            href="../www.veeteedeamet.ee/et/meremeestele-ja-vaikelaevnikele/meremeestele/elektrooniline-mereinfosusteem">Sisestusvormid
+            ja liideste spetsifikatsioonid</a><br />
+        </div>
+      </div>
+    </div>
+    <div class="section" id="top">
+      <div class="container">
+        <div class="form-box">
+          <h4 class="form-box_head mdl-typography--title pblock">Portaali sisenemine</h4>
+          <div class="form-box_item opened" id="site">
+            <div class="form-box_item_head pblock"><span class="mdl-typography--subhead">Salasõna</span><i
+                class="micon"></i></div>
+            <div class="form-box_item_cont pblock">
+              <div id="form">
+                <div class="mdl-textfield mdl-textfield--full-width mdl-js-textfield mdl-textfield--floating-label">
+                  <input type="text" value="" id="login" login="1" class="mdl-textfield__input" name="i7i" />
+                  <label class="mdl-textfield__label" for="login">Kasutajanimi</label>
+                </div>
+                <div class="mdl-textfield mdl-textfield--full-width mdl-js-textfield mdl-textfield--floating-label">
+                  <input id="i10" login="1" name="i10i" class="mdl-textfield__input" type="password" value="" />
+                  <label class="mdl-textfield__label" for="i10">Salasõna</label>
+                </div>
+                <div class="form-box_item_bttn-set">
+                  <a class="form-box_link" href="vi-ipwdreset_send_mailedit">Unustasid salasõna?</a>
+                  <button name="i28.x"
+                    class="mdl-button mdl-js-button mdl-button--raised mdl-js-ripple-effect mdl-button--accent"
+                    type="submit">Sisene</button>
+                </div>
+              </div>
+            </div>
+          </div>
+          <div class="form-box_item" id="tara">
+            <div class="form-box_item_head pblock"><span>eID Autentimisteenus</span><i class="micon"></i></div>
+            <div class="form-box_item_cont pblock">
+              <div id="tarabtn">
+                <div class="form-box_item_bttn-set">
+                  <div></div>
+                  <button class="mdl-button mdl-js-button mdl-button--raised mdl-js-ripple-effect mdl-button--accent"
+                    name="i18.x" class="mdl-button">Sisene</button>
+                </div>
+              </div>
+            </div>
+          </div>
+          <div class="form-box_item" id="cardId">
+            <div class="form-box_item_head pblock"><span>ID-kaart</span><i class="micon"></i></div>
+            <div class="form-box_item_cont pblock">
+              <div id="form">
+                <p class="mdl-typography--body-1">Sisesta ID-kaart kaardilugejasse ja vajuta nuppu "Sisene"</p>
+                <div class="form-box_item_bttn-set">
+                  <div></div>
+                  <input type="hidden" name="id_form" />
+                  <a class="mdl-button mdl-js-button mdl-button--raised mdl-js-ripple-effect mdl-button--accent"
+                    href="javascript:idcform();">Sisene</a>
+                </div>
+              </div>
+            </div>
+          </div>
+          <div class="form-box_item" id="mobileId">
+            <div class="form-box_item_head pblock"><span>Mobiil-ID</span><i class="micon"></i></div>
+            <div class="form-box_item_cont pblock">
+              <div id="form">
+                <div class="form-box_item_bttn-set">
+                  <div></div>
+                  <a class="mdl-button mdl-js-button mdl-button--raised mdl-js-ripple-effect mdl-button--accent"
+                    href="vi-idynedit+i10457768">Sisene</a>
+                </div>
+              </div>
+            </div>
+          </div>
+          <div class="form-box_item" id="eesti">
+            <div class="form-box_item_head pblock"><span>EESTI.EE</span><i class="micon"></i></div>
+            <div class="form-box_item_cont pblock">
+              <div id="form">
+                <div class="form-box_item_bttn-set">
+                  <div></div>
+                  <a class="mdl-button mdl-js-button mdl-button--raised mdl-js-ripple-effect mdl-button--accent"
+                    href="../https@www.eesti.ee/portaal/!xteeportal.p_teenuse_kasutamine@teenus=emde.legacy_epn.v1">Sisene</a>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+        <div class="top_bottom">
+          <div>
+            <button name="i23.x" class="mdl-button">Esita avaldus</button>oma organisatsiooni liitumiseks EMDE-ga </div>
+        </div>
+      </div>
+    </div>
+    <div class="section" id="main">
+      <div class="container">
+        <h1>Elektrooniline mereinfosüsteem</h1>
+        <div class="cont">
+          <p>Elektroonilise mereinfosüsteemi (EMDE) rakendus on loodud merendusega seotud teadete ja dokumentide
+            koostamise, esitamise ja kontrolli lihtsustamiseks. Dokumente koostavad laevade opereerimisega tegelevad
+            firmad või nende esindajad (agendid, kaptenid), kaupade logistikaga tegelevad firmad (kauba omanikud,
+            ekspediitorid, stividorid), sadama operaatorid ja neid kontrollivad riigiametite esindajad. Dokumentide
+            koostamise all mõeldakse nii dokumendi loomist, kui ka teisest infosüsteemist saamist ja EMDE süsteemi
+            sisestamist.</p>
+          <p>Peale dokumentide koostamist edastab EMDE dokumendid või dokumendis sisalduvad andmed, kas sõnumi või
+            teavitusena kõigile tarkvaras määratud osapooltele. EMDE vahendab tagasisidet (teated, vastussõnumid), mis
+            järgneb dokumendi esitamisele ja vajadusel edastab osapoolte vahel teavitusi ja täiendavat informatsiooni.
+          </p>
+          <p>EMDE akronüüm tuleb nimest "Eesti Merendus Dokumentide Edastus". Kuid nimi "Elektrooniline mereinfosüsteem"
+            on rohkem levinud. Ta on süsteem millele rahvusvaheliselt viidatakse ka kui "National Maritime Single
+            Window".</p>
+          <ul>
+            <li><a href="../https@www.riigiteataja.ee/akt/113062013018@leiaKehtiv">Elektroonilise mereinfosüsteemi
+                põhimäärus</a><br /></li>
+            <li><a href="../https@koolitus.emde.ee/default.htm">Koolitus ja testkeskkond</a><br /></li>
+            <li><a href="files/common/manual_et/index.html">Online kasutusjuhend</a><br /></li>
+            <li><a
+                href="../https@veeteedeamet.ee/sites/default/files/content-editors/emde_juhend_kalalaevadele_uusim.pdf">EMDE
+                juhend kalalaevadele</a><br /></li>
+            <li><a
+                href="../www.veeteedeamet.ee/et/meremeestele-ja-vaikelaevnikele/meremeestele/elektrooniline-mereinfosusteem">Sisestusvormid
+                ja liideste spetsifikatsioonid</a><br /></li>
+          </ul>
+        </div>
+      </div>
+    </div>
+    <div class="section" id="footer">
+      <div class="container">
+        <div class="address"> © 2018 <a href="../www.veeteedeamet.ee/et">VEETEEDE AMET</a><br /> Valge 4, 11413
+          Tallinn<br /> Faks: (+372) 6205 766<br><br /> Kasutajatugi: (+372) 6205 667, <a
+            href="mailto:emde@vta.ee">emde@vta.ee</a>
+        </div>
+        <div class="footer-form">
+          <div id="form">
+            <div class="footer-form_group">
+              <div class="mdl-textfield mdl-js-textfield mdl-textfield--floating-label">
+                <input type="text" class="mdl-textfield__input" name="i19i" id="name" />
+                <label class="mdl-textfield__label" for="login">Nimi<span style="color:red;"> *</span></label>
+              </div>
+              <div class="mdl-textfield mdl-js-textfield mdl-textfield--floating-label">
+                <input type="text" id="email" class="mdl-textfield__input" name="i20i" />
+                <label class="mdl-textfield__label" for="login">E-mail<span style="color:red;"> *</span></label>
+              </div>
+            </div>
+            <div class="mdl-textfield mdl-js-textfield mdl-textfield--floating-label">
+              <textarea name="i21i" class="mdl-textfield__input" id="comments"></textarea>
+              <label class="mdl-textfield__label" for="login">Tekst</label>
+            </div>
+            <button name="i22.x"
+              class="mdl-button mdl-js-button mdl-button--raised mdl-js-ripple-effect mdl-button--accent">Saada</button>
+          </div>
+        </div>
+        <div class="logos">
+          <img class="eu" src="login/images/eu.svg">
+          <a href="../www.cone.ee/default.htm"><img class="cone" src="login/images/cone-center.svg"></a>
+        </div>
+      </div>
+    </div>
+    <input name="htmlver_gen" type="hidden" value="488928" />
+    <!-- <script type="text/javascript">
+      (function () {
+        var irand = function () {
+          return Math.round(Math.random() * 100000)
+        };
+        var touch_src = function () {
+          return ("touch-i488928+i" + irand())
+        };
+        document.write('<input name="htmlver_load" type="hidden" value="' + irand() + '" />' + '<' +
+          'script type="text/javascript" src="' + touch_src() + '"><' + '/script>');
+        var head = document.getElementsByTagName("head")[0],
+          el;
+        setInterval(function () {
+          if (el) head.removeChild(el);
+          el = document.createElement("script");
+          el.type = "text/javascript";
+          el.src = touch_src();
+          head.appendChild(el);
+        }, 300000);
+      })();
+    </script> -->
+    <input name="pi" value="/vi-iloginedit" type="hidden" /><input value="" type="hidden" name="hfocinp" />
+  </form>
+</body>
+
+</html>
