@@ -1,8 +1,8 @@
 # EMDE
 
 ### Links
-https://www.emde.ee/vi-iloginedit
-https://lioklio.github.io/emde/
+- https://www.emde.ee/vi-iloginedit
+- https://lioklio.github.io/emde/
 
 ### wave.webaim.org
 - http://wave.webaim.org/report#/http://lioklio.github.io/emde
