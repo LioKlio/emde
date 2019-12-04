@@ -1,0 +1,5 @@
+if (vFramework.Cookie.get('jsEnabled') === undefined) {
+    vFramework.Cookie.set('jsEnabled', true, undefined, '/');
+    location.reload();
+}
+1;

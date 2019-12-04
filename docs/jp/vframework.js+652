@@ -1,0 +1,1643 @@
+  
+/*
+ *  vFramework 0.4 (28 Feb, 2008)
+ *
+ *  Possible bugs:
+ *      1. IDs of dynamically created elements can intersect with
+ */
+
+var vFramework = {
+	Debug      : {},
+	DOM        : {},
+	Browser    : {},
+	Array      : {},
+	CSS        : {},
+	JS         : {},
+	File       : {},
+	Object     : {},
+	String     : {},
+	Hash       : {},
+    Cookie     : {},
+    Pa         : {},
+    Table      : {},
+	Validate   : {},
+	Conversion : {},
+	Ajax       : {},
+	Caret      : {},
+	Date       : {},
+	Image      : {},
+	Textarea   : {},
+	Events	   : {}
+};
+
+/********************************************************************************/
+
+vFramework.Events.wheelDelta = function(e) {
+	return e.detail || -(e.wheelDelta / 40);
+}
+
+vFramework.CSS.addClass = function(object, className) {
+	if (!vFramework.CSS.hasClass(object, className))
+		object.className += (object.className.length ? ' ' : '') + className;
+}
+
+vFramework.CSS.removeClass = function(object, className) {
+    var regExp = new RegExp('\\b' + className + '\\b');
+
+    object.className = object.className.replace(regExp, '');
+}
+
+vFramework.CSS.hasClass = function(object, className) {
+    return (new RegExp('\\b' + className + '\\b')).test(object.className);
+}
+
+vFramework.CSS.getComputedStyle = function(object) {
+	if (object.currentStyle)
+		return object.currentStyle;
+
+	if (window.getComputedStyle)
+		return window.getComputedStyle(object, null);
+}
+
+vFramework.CSS.getRulePropertyName = function() {
+	if (document.styleSheets[0].rules)
+		return 'rules';
+
+	if (document.styleSheets[0].cssRules)
+		return 'cssRules';
+}
+
+vFramework.CSS.getCssRules = function(selectorPattern) {
+	var prop = vFramework.CSS.getRulePropertyName();
+	var rval = {};
+
+	for(var i = 0; i < document.styleSheets.length; i++) {
+		for(var j = 0; j < document.styleSheets[i][prop].length; j++) {
+			var p = document.styleSheets[i][prop][j];
+
+			if (p.selectorText !== undefined && p.selectorText.indexOf(selectorPattern) >= 0)
+				rval[p.selectorText] = p.style;
+		}
+	}
+
+	return rval;
+}
+
+/******************************************************************************/
+
+vFramework.Cookie.set = function(sName, sValue, oExpires, sPath, sDomain, bSecure) {
+    var sCookie = sName + "=" + encodeURIComponent(sValue);
+
+	if (oExpires)
+		sCookie += "; expires=" + oExpires.toGMTString();
+	if (sPath)
+		sCookie += "; path=" + sPath;
+	if (sDomain)
+		sCookie += "; domain=" + sDomain;
+	if (bSecure)
+		sCookie += "; secure";
+
+	document.cookie = sCookie;
+}
+
+vFramework.Cookie.get = function(sName) {
+    var sRE = "(?:; )?" + sName + "=([^;]*);?";
+	var oRE = new RegExp(sRE);
+
+	if (oRE.test(document.cookie))
+		return decodeURIComponent(RegExp["$1"]);
+}
+
+vFramework.Cookie.unset = function(sName, sPath) {
+    vFramework.Cookie.set(sName, '', new Date(0), sPath);
+}
+
+/********************************************************************************/
+
+// .Object.
+vFramework.JS.copyProto = function(src, dest, overwrite) {
+    for(var i in src.prototype)
+        if (overwrite || !(i in dest.prototype))
+            dest.prototype[i] = src.prototype[i];
+}
+
+//addZero: leftpad(9, "0", 3) == '009'
+// .String.
+vFramework.JS.leftpad = function(value, padch, reslen) {
+    padch = padch.toString();
+
+    for(var i = value.toString().length; i < reslen; i++)
+        value = padch + value;
+
+    return value;
+}
+
+vFramework.JS.rightpad = function(value, padch, reslen) {
+    padch = padch.toString();
+
+    for(var i = value.toString().length; i < reslen; i++)
+        value += padch;
+
+    return value;
+}
+
+vFramework.JS.sprintf = function() {
+	if (arguments.length <= 0 || typeof arguments[0] != 'string')
+		return '';
+	
+    var format = arguments[0].toString();
+
+	for(var i = 1; i < arguments.length; i++)
+		format = format.replace('%s', arguments[i]);
+
+	return format;
+}
+
+vFramework.JS.whichInfinity = function(value) {
+	switch(value) {
+		case Number.POSITIVE_INFINITY:
+			return 1;
+		case Number.NEGATIVE_INFINITY:
+			return -1;
+		default:
+			return 0;
+	}
+}
+
+vFramework.JS.getGlobalScope = function() {
+	return (function(){ return this }).call(null);
+}
+
+vFramework.JS.toJSON = function(obj) {
+	var result = '';
+	var type   = typeof obj;
+
+	if (obj === null)
+		return 'null';
+	if (obj === undefined)
+		return 'undefined';
+	if (type == 'object' && obj.constructor) {
+		var ctor = obj.constructor.toString().toLowerCase();
+		var type = ctor.substring(ctor.indexOf(' ') + 1, ctor.indexOf('('));
+	}
+
+	switch(type) {
+		case 'date':
+		case 'string':
+		case 'number':
+		case 'boolean':
+			return obj.toString();
+		case 'array':
+			var elems = [];
+			for(var i = 0; i < obj.length; i++)
+				elems.push(vFramework.JS.toJSON(obj[i]));
+			return '[' + elems.join(', ')  + ']';
+		case 'object':
+			var elems = [];
+			for(var i in obj)
+				elems.push(i + ':' + vFramework.JS.toJSON(obj[i]));
+			return '{' + elems.join(', ')  + '}';
+		default:
+			return 'type_is_' + type;
+	}
+}
+
+vFramework.JS.useAliases = function() {
+	window.$ = document.getElementById;
+}
+
+vFramework.JS.outerHTML = function(element) {
+	if (element.outerHTML) {
+		return element.outerHTML;
+	} else {
+		var container = document.createElement("DIV");
+		var elemclone = element.cloneNode(true);
+
+		container.appendChild(elemclone);
+		return container.innerHTML;
+	}
+}
+
+vFramework.JS.getType = function(object) {
+	if (object === null)
+		return 'Null';
+		
+	if (object === undefined)
+		return 'Undefined';
+	
+	return Object.prototype.toString.call(object).slice(8, -1);
+}
+
+vFramework.JS.fireEvent = function(elem, eventName) {
+	if (!elem)
+		return;
+		
+	if (eventName != 'change')
+		throw new Error('fireEvent(' + eventName + ') not implemented');
+	
+	if (elem.fireEvent) {
+		elem.fireEvent('onchange');
+	}
+	else if (document.createEvent) {
+		var ev = document.createEvent('HTMLEvents');
+		
+		if (ev.initEvent)
+			ev.initEvent('change', true, true);
+		
+		if (elem.dispatchEvent)
+			elem.dispatchEvent(ev);
+	}
+}
+
+/********************************************************************************/
+
+vFramework.Object.shallowClone = function(source) {
+    var newObject = {};
+
+    for(var k in source)
+        newObject[k] = source[k];
+
+    return newObject;
+}
+
+vFramework.Object.listProperties = function(object) {
+    var sProperties = '';
+    var propertyNum = 0;
+
+    for(var prop in object) {
+        if (++propertyNum % 5 == 0)
+            sProperties += '<br>';
+
+        sProperties += vFramework.JS.rightpad(prop, '&nbsp;', 20);
+    }
+
+    document.body.innerHTML +=
+          '<div id="debugWindow" unselectable="true">' + sProperties
+        + '<div id="debugWindowCloseButton" onClick="vFramework.DOM.removeNode(this.parentNode)">Close</div>'
+        + '</div>';
+
+    // Style debug window
+    var debugWindow = document.getElementById('debugWindow');
+
+    debugWindow.style.cssText =
+          'font-family : courier;'
+        + 'border      : 1px solid black;'
+        + 'background  : #ccc;'
+        + 'padding     : 15px;';
+
+    var debugWindowCloseButton = document.getElementById('debugWindowCloseButton');
+
+    debugWindowCloseButton.style.cssText =
+          'text-align  : center;'
+        + 'border      : 1px solid black;'
+        + 'margin-top  : 30px;'
+        + 'background  : #fff;'
+        + 'font-weight : bold;';
+}
+
+// TODO ['a']['b']
+vFramework.Object.getChainProp = function(object, propChain) {
+    if (object == undefined)
+        return;
+
+    var propList = propChain.split('.');
+	var property = object;
+
+	for(var i = 0; i < propList.length; i++)
+		if (!(property = property[propList[i]]))
+			return;
+
+    return property;
+}
+
+/********************************************************************************/
+
+vFramework.Hash.getKeys = function(hash) {
+    var keys = [];
+
+    for(var k in hash)
+        keys.push(k);
+
+    return keys;
+}
+
+vFramework.Hash.getValues = function(hash) {
+    var values = [];
+
+    for(var k in hash)
+        values.push(hash[k]);
+
+    return values;
+}
+
+/********************************************************************************/
+
+vFramework.Pa.getFirstByClass = function(arr, className) {
+    for(var i = 0; i < arr.length; i++)
+        if (arr[i].instanceOf(className))
+            return arr[i];
+}
+
+/********************************************************************************/
+
+vFramework.String.replaceChars = function(str, chstr, replacement) {
+	if (str && str.toString && chstr !== undefined && chstr !== null)
+		return str.toString().replace(new RegExp('['+chstr+']', 'g'), replacement||'');
+}
+
+vFramework.String.replaceByPos = function(str, replaceText, istart, iend) {
+    return str.substr(0, istart) + replaceText + str.substr(iend);
+}
+
+vFramework.String.indexOf = function(string, sChars) {
+	var parts = string.split( new RegExp('[' + sChars + ']{1}') );
+	return parts.length && parts[0].length != string.length ? parts[0].length : -1;
+}
+
+vFramework.String.endsWith = function(str, pattern) {
+	return str.length >= pattern.length && str.lastIndexOf(pattern) === str.length - pattern.length;
+}
+
+vFramework.String.startsWith = function(str, pattern) {
+	return str.indexOf(pattern) == 0;
+}
+
+vFramework.String.substrCount = function(str, substr) {
+	if (typeof str == 'string')
+		return (str.match(new RegExp(substr, "g")) || []).length;
+	
+	return 0;
+}
+
+vFramework.String.findClosestString = function(str, options) {
+	var smallest = Number.POSITIVE_INFINITY;
+ 	var closest;
+
+	for(var i = 0; i < options.length; i++) {
+		var t = options[i].length - str.length;
+
+		if (vFramework.String.startsWith(options[i], str) && t < smallest) {
+			smallest = t;
+			closest  = options[i];
+		}
+	}
+
+	return closest;
+}
+
+vFramework.String.splitToWords = function(str, caseSensitive) {
+	return (caseSensitive ? str.toString() : str.toString().toLowerCase()).replace(/["'\[\]]/g, '').split(/[ ,.-]/);
+}
+
+vFramework.String.matchesWords = function(str, pattern, caseSensitive) {
+	var strWords = vFramework.String.splitToWords(str, caseSensitive);
+	var ptnWords = vFramework.String.splitToWords(pattern, caseSensitive);
+
+	if (strWords.length < ptnWords.length)
+		return false;
+
+	for(var i = 0; i < ptnWords.length; i++) {
+		var matches = false;
+
+		for(var j = 0; j < strWords.length; j++) {
+			if (strWords[j].substr(0, ptnWords[i].length) == ptnWords[i]) {
+				matches = true;
+				break;
+			}
+		}
+
+		if (!matches)
+			return false;
+	}
+
+	return matches;
+}
+
+/******************************************************************************/
+// // works in IE, conentEditable
+
+vFramework.Caret.getPosition = function(node) {
+	/*if (document.selection) {
+		var sel = document.selection.createRange();
+		var rng = document.body.createTextRange();
+		var pos = 0;
+
+		rng.moveToElementText(node);
+
+		if (!rng.inRange(sel))
+			return -1;
+
+		while(rng.compareEndPoints("StartToStart", sel)) {
+			rng.moveStart("character", 1);
+			pos++;
+		}
+
+		return pos;
+	}
+	else */
+	if (window.getSelection) {
+		var rtl   = 0;
+    	var sel   = window.getSelection();
+    	//var xpath = document.evaluate('.//text()', node, null, XPathResult.ORDERED_NODE_SNAPSHOT_TYPE, null);
+        var textNodes = getTextNodes(node); //wregs added
+
+        /*/
+    	for(var i = 0; i < xpath.snapshotLength; i++) {
+    		var textNode = xpath.snapshotItem(i);
+    		
+    		if (textNode == sel.anchorNode)
+    			return rtl + sel.anchorOffset;
+    		
+    		rtl += textNode.data.length;
+    	}
+    	*/
+    	for(var i = 0; i < textNodes.length; i++) {
+            var textNode = textNodes[i];
+
+            if (textNode == sel.anchorNode)
+                return rtl + sel.anchorOffset;
+
+            rtl += textNode.data.length;
+        }
+	}
+	return 0;
+}
+
+// works for IE, FF and contentEditables 
+vFramework.Caret.setPosition = function(node, pos) {
+    pos = Math.max(parseInt(pos), 0);
+    
+	if (window.getSelection) {
+
+		var rtl = 0;
+
+
+    	
+		//var xpath = document.evaluate('.//text()', node, null, XPathResult.ORDERED_NODE_SNAPSHOT_TYPE, null);
+		var found = false;
+    	var textNodes = getTextNodes(node); //wregs added
+        /*
+		for(var i = 0; i < xpath.snapshotLength; i++) {
+			var textNode = xpath.snapshotItem(i);
+			var textLen  = textNode.data.length;
+			
+			if (pos >= rtl && pos < (rtl + textLen)) {
+				found = true;
+				break;
+			}
+			rtl += textLen;
+		}*/
+		/* wregs added*/
+		var textNode;
+		var textLen;
+		for(var i = 0; i < textNodes.length; i++) {
+            textNode = textNodes[i];
+            textLen  = textNode.data.length;
+
+            if (pos >= rtl && pos < (rtl + textLen)) {
+                found = true;
+                break;
+            }
+            rtl += textLen;
+        }
+        var npos = found ? pos - rtl : textLen;
+
+		if (textNode) {
+            var sel = window.getSelection();
+            sel.removeAllRanges();
+            var rng  = document.createRange();
+			rng.selectNode(textNode);
+            rng.setStart(textNode, npos);
+            rng.setEnd(textNode, npos);
+            rng.collapse(false);
+			sel.addRange(rng);
+			sel.collapseToEnd();
+		}
+
+	}
+}
+
+// IE/FF
+vFramework.Caret.getTextareaPosition = function(node) {
+	var pos = 0;
+	
+	if (document.selection) {
+		pos = vFramework.Caret.getPosition(node);
+//		node.focus();
+//		
+//		var sel = document.selection.createRange();
+//		sel.moveStart('character', -node.value.length);
+//		pos = sel.text.length;
+	}
+	else if (node.selectionStart || node.selectionStart == '0')
+		pos = node.selectionStart;
+	
+	return pos;
+}
+
+vFramework.Textarea.getLine = function(node) {
+	var pos   = vFramework.Caret.getTextareaPosition(node);
+   	var lines = node.value.replace(/\r/g, '').substr(0, pos).split('\n');
+	var rval  = 0;
+	
+	if (node.cols === undefined)
+		throw new Error("textarea doesn't have the 'cols' parameter");
+	
+	for(var i = 0; i < lines.length; i++)
+		rval += Math.ceil(Math.max(lines[i].length, 1) / node.cols);
+	
+	return Math.max(rval, 1);
+}
+
+/******************************************************************************/
+
+vFramework.Browser.getName = function() {
+    var browser = navigator.userAgent;
+
+	var isOpera  = browser.strHasText('Opera').length > 0;
+	var isKHTML  = browser.strHasText('KHTML', 'Konqueror', 'AppleWebKit').length > 0;
+	var isMSIE   = browser.strHasText('compatible', 'MSIE').length == 2 && !isOpera;
+	var isMoz    = browser.strHasText('Gecko').length == 1 && !isKHTML;
+	var isSafari = browser.strHasText('AppleWebKit').length == 1;
+
+	if (isMSIE)   return 'IE';
+	if (isMoz)    return 'Mozilla';
+	if (isSafari) return 'Safari';
+	if (isKHTML)  return 'Konqueror';
+	if (isOpera)  return 'Opera';
+}
+
+vFramework.Browser.getMousePosition = function(ev) {
+    var body = document.body;
+      
+    return {
+        x: (ev.pageX || ev.clientX + body.scrollLeft - body.clientLeft),
+        y: (ev.pageY || ev.clientY + body.scrollTop  - body.clientTop)
+    };
+}
+
+/******************************************************************************/
+
+// Can be used to move nodes
+vFramework.DOM.appendChild = function(parent, child) {
+	parent.appendChild(child);
+}
+
+vFramework.DOM.insertBefore = function(refNode, newNode) {
+	refNode.parentNode.insertBefore(newNode, refNode);
+}
+
+// XXX was appendChild(targetNode. was it a bug?
+vFramework.DOM.insertAfter = function(refNode, newNode) {
+	var parent = refNode.parentNode;
+	
+	if (parent.lastChild == refNode)
+		vFramework.DOM.appendChild(parent, newNode);
+	else
+		vFramework.DOM.insertBefore(refNode.nextSibling, newNode);
+}
+
+/******************************************************************************/
+
+vFramework.DOM._normalizeAttributesIE = function(attributes) {
+	return typeof(attributes) == 'string' ? attributes : vFramework.DOM.createAttributeString(attributes);
+}
+
+
+//some attr can't be added in IE after createElement
+vFramework.DOM._createNodeIE = function(tag, attributes, appendTo) {
+	return (appendTo ? appendTo.ownerDocument : document).createElement('<' + tag + ' ' + vFramework.DOM._normalizeAttributesIE(attributes) + '>');
+}
+
+// TODO attributes cannot be a string
+vFramework.DOM._normalizeAttributesMozilla = function(attributes) {
+	if (typeof(attributes) == 'string')
+		throw "Attributes cannot be string in Mozilla";
+
+	return attributes;
+}
+
+vFramework.DOM._createNodeMozilla = function(tag, attributes) {
+	var node = document.createElement(tag);
+
+	attributes = vFramework.DOM._normalizeAttributesMozilla(attributes);
+
+	for(var name in attributes)
+		node.setAttribute(name, attributes[name]);
+		//TODO#1 node[name] = attributes[name];
+
+	return node;
+}
+
+vFramework.DOM._createNodeSafari = function(tag, attributes) {
+	return vFramework.DOM._createNodeMozilla(tag, attributes);
+}
+
+vFramework.DOM.createNode = function(tagName, attributes, appendTo, appendMethod, displayNone) {
+	//if (appendTo == undefined)
+    //    throw new Error("createNode: appendTo is undefined");
+	
+	if (appendMethod == undefined)
+		appendMethod = this.appendChild;
+	
+	var funcName = vFramework.DOM['_createNode' + vFramework.Browser.getName()];
+	
+	if (funcName == undefined)
+        throw new Error("createNode: " + funcName + " does not exist");
+	
+	var node = funcName(tagName, attributes, appendTo);
+	
+	if (displayNone)
+		node.style.display = 'none';
+	
+	if (appendTo != undefined)
+		appendMethod(appendTo, node);
+	
+	return node;
+}
+
+vFramework.DOM.removeNode = function(node, keepChildren) {
+	var parent = node && node.parentNode;
+	
+	if (parent) {
+		if (keepChildren)
+			for(var i = 0; i < node.childNodes.length; i++)
+				parent.insertBefore(node.childNodes[i].cloneNode(true), node);
+
+		parent.removeChild(node);
+	}
+}
+
+vFramework.DOM.renameNode = function(node, newTagName) {
+	var attrLst;
+
+	if (vFramework.Browser.getName() == 'IE')
+		attrLst = vFramework.DOM.extractAttributeString(node.outerHTML.trim());
+	else
+		attrLst = this.getAttributeList(node);
+
+	var newNode = vFramework.DOM.createNode(
+		newTagName, attrLst, node, vFramework.DOM.insertBefore
+	);
+
+	vFramework.DOM.copyChildren(node, newNode);
+	vFramework.DOM.removeNode(node);
+}
+
+vFramework.DOM.createInput = function(name, type, appendTo) {
+	return vFramework.DOM.createNode('input', {name:name, type:type}, appendTo);
+}
+
+// XXX attribute values are not escaped
+vFramework.DOM.createAttributeString = function(attributes) {
+	var attributeString = '';
+
+	for(var name in attributes)
+		attributeString += name + '="' + attributes[name] + '" ';
+
+	return attributeString.substr(0, attributeString.length-1);
+}
+
+vFramework.DOM.extractAttributeString = function(nodeHTML) {
+	var result = new RegExp(/^<(.*?) ([^>]*)>/).exec(nodeHTML);
+	return result ? result[2] : "";
+}
+
+// XXX has bugs in IE
+// XXX bug for attributes without values 'disabled id="formroot"'
+vFramework.DOM.getAttributeList = function(node) {
+	var list = {};
+
+	if (node.outerHTML) {
+		var attrs = vFramework.DOM.extractAttributeString(node.outerHTML.trim()).split(" ");
+
+		for(var i = 0; i < attrs.length; i++)
+			list[ attrs[i].substr(0, attrs[i].indexOf("=")) ]
+				= attrs[i].substr(attrs[i].indexOf("=")+1)
+	} else {
+		for(var key in node.attributes) {
+			var attr = node.attributes[key];
+
+			if (attr.nodeName)
+				list[attr.nodeName] = attr.nodeValue;
+		}
+	}
+
+	return list;
+}
+
+vFramework.DOM.copyChildren = function(srcNode, destNode) {
+    for(var i = 0; i < srcNode.childNodes.length; i++)
+        destNode.appendChild(srcNode.childNodes[i].cloneNode(true));
+}
+
+vFramework.DOM.getParentById = function(object, id) {
+    while(object && (object.id === undefined || object.id != id))
+        object = object.parentNode;
+
+    return object;
+}
+vFramework.DOM.getParentWithId= function(node,postfix){
+    var object=node;
+    while(object){
+        var id=object.id||"";
+        var lastChar=id.length?id.charAt(id.length-1):"";
+        if(postfix){
+            if(postfix.length>0 && lastChar==postfix)
+                break;
+            else
+                if (!isDigit(lastChar)&&lastChar.length>0) break;
+        }
+        else if(isDigit(lastChar)) break;
+        object = object.parentNode;
+    }
+    return object;
+}
+vFramework.DOM.getNodeWithId=function(node){
+    var object=node;
+    while(object){
+        if(object.id||object.name) return object;
+        object=object.parentNode;
+    }
+    return object;
+}
+vFramework.DOM.innerText = function(object) {
+    return document.all ? object.innerText : object.textContent;
+}
+
+// XXX tested in IE only
+vFramework.DOM.wrapSelection = function(tagName, container) {
+	document.execCommand('FontName', false, 'VFWK_SEL_WRAPPER');
+
+	var fonts = container.getElementsByTagName('FONT');
+
+	for(var i = 0; i < fonts.length; i++) {
+		var element = fonts[i];
+		var wrapper = document.createElement(tagName);
+
+		this.copyChildren(element, wrapper);
+		element.parentNode.replaceChild(wrapper, element);
+	}
+
+	return wrapper;
+}
+
+vFramework.DOM.getOrCreateNode = function(tagName, attributes, appendTo) {
+	var node = document.getElementById(attributes.id);
+
+	if (node == undefined)
+		node = vFramework.DOM.createNode(tagName, attributes, appendTo);
+
+	return node;
+}
+
+vFramework.DOM.isDomElement = function(node) {
+	return node && node.nodeType === 1;
+}
+
+vFramework.DOM.replaceNode = function(node, substitute) {
+	node.parentNode.replaceChild(substitute, node);
+}
+
+// returns {top:0, left:0}
+vFramework.DOM.getAbsolutePosition = function(node) {
+	var position = {top: 0, left: 0};
+    
+    if (vFramework.DOM.isDomElement(node)) {
+	 	if (node.getBoundingClientRect) {
+	 		var clientRect = node.getBoundingClientRect();
+	 		var ownerDoc   = node.ownerDocument;
+	 		var clientTop  = ownerDoc.documentElement.clientTop  || ownerDoc.body.clientTop  || 0;
+	 		var clientLeft = ownerDoc.documentElement.clientLeft || ownerDoc.body.clientLeft || 0;
+	 		
+	 		position.top  = clientRect.top  + (ownerDoc.documentElement.scrollTop  || ownerDoc.body.scrollTop)  - clientTop;
+	 		position.left = clientRect.left + (ownerDoc.documentElement.scrollLeft || ownerDoc.body.scrollLeft) - clientLeft;
+	 	}
+		else if (node.ownerDocument.getBoxObjectFor) {
+	 		var box = node.ownerDocument.getBoxObjectFor(node);
+	 		
+	 		position.top  = box.y;
+	 		position.left = box.x; 
+ 		}
+ 		else {
+ 			return getAbsOffset(node);
+ 		}
+    }
+ 	
+ 	return position;
+}
+
+vFramework.DOM.getElementRect = function(elem) {
+	if (!vFramework.DOM.isDomElement(elem))
+		return {x:0, y:0, w:0, h:0};
+	
+	var coords = vFramework.DOM.getAbsolutePosition(elem);
+	return {x: coords.left, y: coords.top, w: elem.offsetWidth, h: elem.offsetHeight};
+}
+
+// TODO: needs correct doctype to work properly
+vFramework.DOM.getDocumentRect = function(elem) {
+	elem = elem || document.documentElement;
+	
+	if (elem == undefined)
+		return {x:0, y:0, w:0, h:0};
+	
+	return {x: elem.scrollLeft, y: elem.scrollTop, w: elem.clientWidth, h: elem.clientHeight};
+}
+
+vFramework.DOM.isChild = function(node, parentCandidate) {
+	for(node; node; node = node.parentNode)
+		if (node == parentCandidate)
+			return true;
+}
+
+vFramework.DOM.alignTypes = {TOP:0, MIDDLE:1, BOTTOM:2};
+
+vFramework.DOM.scrollIntoView = function(elem, alignType) {
+	if (!vFramework.DOM.isDomElement(elem))
+		return;
+	
+	switch(alignType) {
+		case vFramework.DOM.alignTypes.TOP:
+			return elem.scrollIntoView(true);
+        case vFramework.DOM.alignTypes.BOTTOM:
+        	return elem.scrollIntoView(false);
+        case vFramework.DOM.alignTypes.MIDDLE:
+        	elem.scrollIntoView(true);
+        	
+            for(var copy = elem; copy; copy = copy.parentNode) 
+                if (vFramework.DOM.isScrollable(copy)) 
+                    copy.scrollTop -= (copy.clientHeight / 2);
+
+        	if (elem.getBoundingClientRect) {
+	        	for(var cont = elem; cont; cont = cont.parentNode) {
+	        		if (vFramework.DOM.isScrollable(cont)) {
+	        			var elemAbsTop  = elem.getBoundingClientRect().top;
+	        			var contAbsTop  = cont.getBoundingClientRect().top;
+	        			var midDistance = contAbsTop + (cont.clientHeight/2) - elemAbsTop;
+	        			
+	        			if (midDistance > 0)
+	        				cont.scrollTop -= midDistance;
+	        		}
+	        	}
+	        	
+	        	var viewportHalf = document.documentElement.clientHeight / 2;
+	        	var elemTopCoord = elem.getBoundingClientRect().top;
+	        	
+	        	if (elemTopCoord < viewportHalf)
+	        		window.scrollBy(0, elemTopCoord + elem.offsetHeight - viewportHalf);
+        	}
+        	
+			return;
+	}
+}
+
+vFramework.DOM.isScrollable = function(elem) {
+	return elem && elem.clientHeight < elem.scrollHeight;
+}
+
+/******************************************************************************/
+
+// works only for simple tables without colspan/rowspan
+vFramework.Table.getColumnCells = function(table, column) {
+    var result = [];
+    var ncols  = table.rows[0].cells.length;
+
+    for(var i = column; i < table.cells.length; i+=ncols)
+        result.push(table.cells[i]);
+
+    return result;
+}
+
+/******************************************************************************/
+// TODO standard selects and multiselect are not taken into account
+
+vFramework.Ajax.inputSerializable = function(element, submitName) {
+	switch(element.type.toUpperCase()) {
+		case 'CHECKBOX':
+		case 'RADIO':
+			return element.checked;
+		case 'SUBMIT':
+		case 'IMAGE':
+			return element.name == submitName;
+		case 'PASSWORD':
+		case 'HIDDEN':
+		case 'TEXT':
+			return true;
+	}
+}
+
+vFramework.Ajax.getPostString = function(form, submitName) {
+	var elements  = form.getElementsByTagName('*');
+	var postPairs = [];
+
+	for(var i = 0; i < elements.length; i++) {
+		var e = elements[i];
+		var s = null;
+
+		if (e.disabled || e.name === undefined)
+			continue;
+
+		switch(e.tagName) {
+			case 'TEXTAREA':
+				s = true;
+				break;
+			case 'BUTTON':
+			case 'INPUT':
+				if (this.inputSerializable(e, submitName))
+					s = true;
+
+				break;
+		}
+
+		if (s !== null)
+			postPairs.push(encodeURIComponent(e.name) + "=" + encodeURIComponent(e.value));
+	}
+
+	return postPairs.join("&");
+}
+
+// IE7 has native XMLHttpRequest support. Probably, that's the reason of 12152 error.
+vFramework.Ajax.createObject = function() {
+	var object;
+	
+	if (window.ActiveXObject) {
+		try {
+			object = new ActiveXObject("Msxml2.XMLHTTP.6.0");
+		} catch(exc) {
+			object = new ActiveXObject("Microsoft.XMLHTTP");
+		}
+	}
+    else if (window.XMLHttpRequest) {
+        object = new XMLHttpRequest();
+
+        if (object && object.overrideMimeType)
+            object.overrideMimeType("text/xml");
+    }
+	
+	return object;
+}
+
+/********************************************************************************/
+
+vFramework.File.getExtension = function(filepath) {
+    var lastPoint = filepath.toString().lastIndexOf('.');
+
+    if (lastPoint >= 0)
+        return filepath.substr(lastPoint+1).toUpperCase();
+}
+
+vFramework.File.getName = function(filepath) {
+	if (typeof filepath == 'string')
+		return filepath.substr(filepath.replace(/\\/g, '/').lastIndexOf('/') + 1);
+	
+	return '';
+}
+
+/******************************************************************************/
+
+vFramework.Date.truncate = function(date, format) {
+	switch(format) {
+		case 'YEAR':
+			date.setMonth(0, 1);
+			date.setHours(0, 0, 0, 0);
+			break;
+		case 'MONTH':
+			date.setDate(1);
+			date.setHours(0, 0, 0, 0);
+			break;
+		case 'DAY':
+			date.setMinutes(0, 0, 0);
+			break;
+		case 'MINUTE':
+			date.setSeconds(0, 0);
+			break;
+	}
+	
+	return date;
+}
+
+/********************************************************************************/
+
+vFramework.Image.preload = function() {
+	var image  = new Image();
+	var failed = [];
+	
+	for(var i = 0; i < arguments.length; i++) {
+		image.src = arguments[i];
+		
+		if (!image.complete)
+			failed.push(arguments[i]);
+	}
+	
+	return failed;
+}
+
+/********************************************************************************/
+// OBSOLETE FUNCTIONS. SHOULD BE REPLACED WITH CALLS TO NEW ONES.
+
+function getOrCreateHidden(name) {
+	var hidden = document.getElementsByName(name)[0];
+
+	if (hidden && hidden.type != 'hidden')
+		throw new Error("The requested element has different type");
+
+	if (hidden == undefined)
+	    hidden = createHidden(name, GlobalData.formroot);
+
+	return hidden;
+}
+
+function createHidden(name, appendTo, value) {
+    var hidden = vFramework.DOM.createInput(name, 'hidden', appendTo);
+
+    if (value !== undefined)
+	   hidden.value = value;
+
+	return hidden;
+}
+
+/*****************************************************************************/
+
+
+
+
+
+/*********************** GENERAL PROCEDURES **********************************/
+
+vFramework.getSrcElement = function(ev) {
+	if (ev == undefined) ev = event;
+	return ev.srcElement != undefined ? ev.srcElement :  ev.target;
+}
+
+// return array of matched substrings
+// example: "abcdef".strHasText("ab", "ef", "yz") will return ["ab", "ef"].
+String.prototype.strHasText = function() {
+	var indeces = [];
+
+	for(var i = 0; i < arguments.length; i++)
+		if (this.indexOf(arguments[i]) != -1)
+			indeces.push(arguments[i]);
+
+	return indeces;
+}
+
+function getFuncHeader(ptrFunc) {
+	var funcHead = ptrFunc.toString();
+	var startPos = funcHead.indexOf(' ') + 1;
+	var endPos   = funcHead.indexOf(')') - startPos + 1;
+
+	return funcHead.substr(startPos, endPos);
+}
+
+function JSDumper(struct) {
+	var finalString = '';
+	var type = getFuncHeader(struct);
+
+	if (arguments.length > 1) {
+		struct = [struct];
+		for(var i = 1; i < arguments.length; i++)
+			struct.push(arguments[i]);
+	}
+
+	switch(type) {
+		case 'undefined':
+			finalString += 'undefined, ';
+			break;
+		case 'null':
+			finalString += 'null, ';
+			break;
+		case 'date':
+		case 'string':
+		case 'number':
+		case 'boolean':
+			finalString += struct.toString() + ', ';
+			break;
+		case 'function':
+			finalString += getFuncHeader(struct) + ', ';
+			break;
+		case 'array':
+			finalString += '[';
+			for(var i = 0; i < struct.length; i++)
+				finalString += JSDumper(struct[i]) + ', ';
+			finalString += ']';
+			break;
+		case 'object':
+			finalString += '{';
+				for(var j in struct)
+					finalString += j + ':' + JSDumper(struct[j]) + ', ';
+				finalString += '}';
+			break;
+		default:
+			finalString += 'type_is_' + getFuncHeader(struct) + ', ';
+	}
+
+	if (type == 'array')
+		return finalString.substr(0, finalString.length-3) + ']';
+	else if (type == 'object')
+		return finalString.substr(0, finalString.length-3) + '}';
+	else
+		return finalString.substr(0, finalString.length-2);
+}
+
+function pasteToHTML(sText) {
+	event.returnValue = false;
+
+	var sel = document.selection.createRange();
+	sel.pasteHTML(sText);
+	sel.select();
+}
+
+function getParentByTagName(oTag, tagName, N) {
+	if (N == undefined) N = 1;
+	else if (N < 1) return;
+
+	var met = 0;
+	while(oTag && met != N) {
+		oTag = oTag.parentNode;
+		if (oTag && oTag.tagName == tagName) met++;
+	}
+
+ 	return oTag;
+}
+
+function getParentByClassName(node, className) {
+	var o=node;
+	while(o!=document) {
+	    if(o.classList.contains(className)) return o;
+		o=o.parentNode;
+	}
+
+ 	return null;
+}
+
+function defaults(args, defvals) {
+	for(var i = 0; i < defvals.length; i++)
+		if (args[i] === undefined)
+			args[i] = defvals[i];
+}
+
+function getAbsOffset(obj, attribute) {
+	var position = {top: 0, left: 0};
+	
+	for(obj; obj; obj = obj.offsetParent) {
+		// HTML is the offsetParent. Probably, CSS problem
+		if (obj.tagName == 'HTML')
+			break;
+		
+		position.top  += (obj.offsetTop  || 0) - (obj.scrollTop  || 0);
+		position.left += (obj.offsetLeft || 0) - (obj.scrollLeft || 0);
+		
+		if (obj.tagName == 'DIV' || obj.tagName == 'TD') {
+			position.top  += obj.clientTop  || 0;
+			position.left += obj.clientLeft || 0;
+		}
+	}
+	
+	// Backwards compatibility
+	switch(attribute) {
+		case 'offsetTop':
+			return position.top;
+		case 'offsetLeft':
+			return position.left;
+		default:
+			return position;
+	}
+}
+
+function getOrCreateById(id, tagName) {
+	var element = document.getElementById(id);
+	if (element) return element;
+
+	element = document.createElement(tagName);
+	element.id = id;
+	element.style.visibility = 'hidden';
+	document.body.appendChild(element);
+
+	return element;
+}
+
+/******************************************************************************/
+
+
+/*
+ *	vEvent - event handling routines
+ *
+ *	addGlobalListener/removeGlobalListener - register not more than one global
+ *		listener per event. Capturing event model is used.
+ *
+ */
+
+var vEvent = {
+	IeEvents  : {focus : "focusin", blur : "focusout"},
+	listeners : {}
+};
+
+vEvent.getEventType = function(ev) {
+	
+	//if(ev.type != "mousemove" && ev.type != "mouseover" && ev.type != "mouseout"){
+	//	console.info("getEventType", ev.type);
+	//};
+	
+	if (ev.type == 'focusin' || ev.type == 'focus')
+	    return 'focin';
+
+	if (ev.type == 'focusout' || ev.type == 'blur')
+	    return 'focout';
+
+	return ev.type;
+}
+
+
+// a couple of events in FF was available only in capturing mode; check when want to change
+vEvent.addGlobalListener = function(evtype, listener) {
+	if (this.listeners[evtype]) return;
+	
+	if (window.addEventListener) {
+		window.addEventListener(evtype, listener, true);
+	} else {
+		if (evtype == 'click' || evtype == 'keydown') {
+			window.document["on" + (this.IeEvents[evtype] || evtype)] = listener;
+		} else {
+			document.body["on" + (this.IeEvents[evtype] || evtype)] = listener;
+		}
+	}
+
+	this.listeners[evtype] = listener;
+}
+
+vEvent.removeGlobalListener = function(evtype) {
+	if (!this.listeners[evtype]) return;
+
+	if (window.removeEventListener) {
+		window.removeEventListener(evtype, this.listeners[evtype], true);
+	} else {
+		document.body["on" + (this.IeEvents[evtype] || evtype)] = null;
+	}
+
+	delete this.listeners[evtype];
+}
+
+vEvent.getSrcElem = function(ev) {
+	if (ev == undefined) ev = event;
+	return ev.explicitOriginalTarget || ev.srcElement;
+}
+
+// TODO join with MSEL GET CURSOR POS
+vFramework.getCursorPos = function(node) {
+    if (document.selection && document.selection.createRange)
+		return -document.selection.createRange().moveStart("character", -100);
+	else if (node && node.selectionStart)
+		return node.selectionStart;
+	else if (!document.selection)
+		return 0;
+
+	return -1;
+}
+
+/******************************************************************************/
+
+vFramework.setCursorPos = function(obj, pos) {
+	vFramework.setSelection(obj, pos, pos);
+}
+
+vFramework.setSelection = function(obj, stpos, endpos, fwd) {
+	if (obj.createTextRange) { // IE
+		var rng = obj.createTextRange();
+
+		rng.moveStart('character', stpos);
+		rng.moveEnd('character', endpos - obj.value.length);
+		//if (fw) r.collapse(false);
+		rng.select();
+	}
+	else if (obj.setSelectionRange) { // FF
+		obj.setSelectionRange(stpos, endpos);
+	}
+}
+
+vFramework.isPrintableKeyCode = function(kc) {
+	return /*SHIFT kc == 16 ||*/ kc == 32 || (kc >= 48 && kc <= 57) || (kc >= 65 && kc <= 90) || (kc >= 186 && kc <= 192)
+		|| (kc >= 219 && kc <= 222) || kc == 226 || kc == 110 || (kc >= 96 && kc <= 105) || kc == 106 || kc == 107 || kc == 109;
+}
+
+vFramework.toFullYear = function(year) {
+	year = year.toString();
+	return year - 0 + (year.charAt(0) > 4 && year.length == 2 ? 1900 : year.length <= 2 ? 2000 : 0);
+}
+
+function toNr(num) {
+    return num && isDigit?(num-0):0;
+}
+
+function selText(obj, stpos, endpos) {
+	vFramework.preventDefault(GlobalData.Event);
+
+	if (endpos === undefined)
+		endpos = stpos;
+
+	vFramework.setSelection(obj, stpos, endpos);
+}
+
+// BUG for IE returns full value, not the selection
+vFramework.selectionLength = function(obj) {
+	if (obj.createTextRange)
+		return obj.createTextRange().text.length;
+	else if (obj.selectionEnd)
+		return obj.selectionEnd - obj.selectionStart;
+}
+
+// BUG doesnt work in FF when focus is in an input (argument is used to fix it)
+vFramework.getSelectionText = function(node) {
+	if (document.selection)
+ 		return document.selection.createRange().text;
+ 	else if (window.getSelection) {
+ 		var selection = window.getSelection().toString();
+ 		
+ 		if (selection === "" && node && node.value)
+ 			selection = node.value.substring(node.selectionStart, node.selectionEnd);
+ 		
+ 		return selection;
+ 	}
+}
+
+vFramework.preventDefault = function(ev) {
+	if (ev.preventDefault)
+		ev.preventDefault();
+
+	if (typeof ev.returnValue != 'unknown')
+		ev.returnValue = false;
+}
+
+function circularNumInc(num, dir, min, max) {
+	return num == min && dir < 0 ? max : num == max && dir > 0 ? min : num - 0 + dir;
+}
+
+vFramework.Debug.callStack = function() {
+	if (arguments.caller == undefined) {    // Firefox
+		var err = new Error;
+		if (err.stack) console.info(err.stack);
+		return;
+	}
+
+	var callStack = 'Stack of Calls (last call is at the top):\n\n';
+	var strCaller = arguments.caller.callee;
+
+	for(strCaller; strCaller != null; strCaller = strCaller.caller) {
+		var s = strCaller.toString();
+		callStack += s.substring(s.indexOf(' ')+1, s.indexOf('(')) + '(';
+		for(var i = 0; i < strCaller.arguments.length; i++) {
+			if (i == strCaller.arguments.length-1)
+				callStack += strCaller.arguments[i] + '';
+			else
+				callStack += strCaller.arguments[i] + ', ';
+		}
+		callStack += ')\n';
+
+	}
+	alert(callStack);
+}
+
+function replaceText(str, text, replacement) {
+	return str && str.toString().replace(new RegExp(text, 'g'), (replacement||''));
+}
+
+// ind counts from zero
+function uppercase_char(str, ind) {
+	return str.substr(0, ind-1) + str.charAt(ind).toUpperCase() + str.substr(ind+1);
+}
+
+function rm_double_chars2(str, chr) {
+	return str && str.replace(new RegExp(chr+'(?='+chr+')', 'g'),  '');
+}
+
+vFramework.numInBounds = function(value, min, max) {
+	return value > max ? parseInt(value/max, 10) : value < min ? min : value;
+}
+
+var imageExistsResult;
+function imageExists(URL) {
+	var tagImage = getOrCreateById('imgcheck', 'IMG');
+	if (URL && tagImage) {
+		imageExistsResult = true;
+		tagImage.onError  = function(){imageExistsResult = false};
+		tagImage.src      = URL;
+
+		return imageExistsResult;
+	}
+}
+
+/******************************************************************************/
+
+vFramework.Array.isSubset = function(array1, array2) {
+    var metItems = {};
+
+    for(var i = 0; i < array2.length; i++)
+		metItems[array2[i]] = 0;
+
+	for(var i = 0; i < array1.length; i++)
+		if (array1[i] in metItems)
+			metItems[array1[i]] = 1;
+
+    for(var i in metItems)
+		if (!metItems[i])
+			return false;
+
+	return true;
+}
+
+vFramework.Array.indexOf = function(array, value, strict) {
+	if (strict) {
+		for(var i = 0; i < array.length; i++)
+			if (array[i] === value)
+				return i;
+	} else {
+		for(var i = 0; i < array.length; i++)
+			if (array[i] == value)
+				return i;
+	}
+
+	return -1;
+}
+
+vFramework.Array.valueExists = function(array, value, strict) {
+	return vFramework.Array.indexOf(array, value, strict) >= 0;
+}
+
+vFramework.Array.grep = function(array, callback, thisp, stoplen) {
+    var result = [];
+
+    for(var i = 0; i < array.length; i++) {
+        if (callback.call(thisp, array, i))
+            result.push(array[i]);
+
+		if (result.length == stoplen)
+			break;
+	}
+
+    return result;
+}
+
+// vFramework.optsToHash
+vFramework.Array.toHash = function(array, value) {
+    var hash = {};
+
+    for(var i = 0; i < array.length; i++)
+        hash[array[i]] = value;
+
+    return hash;
+}
+
+vFramework.Array.extractByKey = function(harray, key, unique) {
+	var metvals = {};
+	var values  = [];
+
+	for(var i = 0; i < harray.length; i++) {
+		var v = harray[i][key];
+
+		if ((unique && metvals[v] === undefined) || !unique)
+			values.push(metvals[v] = v);
+	}
+
+	return values;
+}
+
+vFramework.Array.getDistinct = function(array) {
+	return vFramework.Hash.getKeys(this.toHash(array));
+}
+
+vFramework.Array.cloneExplicitly = function(array) {
+	var newArray = [];
+
+	for(var i = 0; i < array.length; i++)
+		newArray.push(array[i]);
+
+	return newArray;
+}
+
+/******************************************************************************/
+
+vFramework.Conversion.fahr2cel = function(value) {
+	return (value - 32) / 1.8;
+}
+
+vFramework.Conversion.cel2fahr = function(value) {
+	return (value * 1.8) + 32;
+}
+
+/******************************************************************************/
+
+// vFramework.isAlphabetic
+vFramework.Validate.word = function(value) {
+	return /^[a-zA-Z]+$/.test(value);
+}
+
+vFramework.Validate.empty = function(value) {
+	return value.toString().length == 0;
+}
+
+vFramework.Validate.inRange = function(value, min, max) {
+	return value >= min && value <= max;
+}
+
+
+vFramework.isNumber = function(value) {
+	return value !== null && value !== '' && value !== ' ' && !isNaN(value);
+}
+
+function isDigit(num) {
+	return (num === "" || num === " " ? false : (num-0 >= 0));
+}
+
+/************************* FOR NEW VERSION OF jsLib ***************************/
+
+var TrimType = {Left:1, Right:2, Both:3};
+
+String.prototype.trim = function(type) {
+	switch(type) {
+		case TrimType.Left:
+			return this.replace(/^\s+/, '');
+		case TrimType.Right:
+			return this.replace(/\s+$/, '');
+		default:
+			return this.replace(/^\s+|\s+$/g, '');
+	}
+}
+
+RegExp.escape = function(text) {
+  if (!arguments.callee.sRE) {
+    var specials = [
+      'default.htm', '.', '*', '+', '?', '|',
+      '(', ')', '[', ']', '{', '}', '\\'
+    ];
+    arguments.callee.sRE = new RegExp(
+      '(\\' + specials.join('|\\') + ')', 'g'
+    );
+  }
+  return text.replace(arguments.callee.sRE, '\\$1');
+}
+
+/******************************************************************************/
+
+vFramework.getInnerText = function(obj) {
+	if (obj.innerText !== undefined)
+		return obj.innerText;
+	else if (obj.textContent !== undefined)
+		return obj.textContent;
+}
+
+vFramework.setInnerText = function(obj, value) {
+    if (obj == undefined)
+		return;
+
+    if (typeof obj.textContent != 'undefined')
+        obj.textContent = value;
+    else if (typeof obj.innerText != 'undefined')
+        obj.innerText   = value;
+}
+
+/******************************************************************************/
+
+vFramework.stopEvent = function() {
+
+    window.stop?window.stop():document.execCommand('Stop');
+    /*switch(vFramework.Browser.getName()) {
+        case 'IE':
+            return document.execCommand('Stop');
+        case 'Mozilla':
+            return window.stop();
+        default:
+            return window.stop();
+    }*/
+}
+
+/******************************************************************************/
+
+function range(from, to) {
+	var result = {};
+	for(var i = from; i <= to; i++)
+		result[i] = 1;
+	return result;
+}
+
+function list() {
+	var result = {};
+	for(var i = 0; i < arguments.length; i++)
+		result[arguments[i]] = 1;
+	return result;
+}
+function getTextNodes(curParent,prevNodes){
+    var textNodes=[];
+    if(prevNodes) textNodes = prevNodes;
+
+    for(var i=0;i<curParent.childNodes.length;i++){
+        if(curParent.childNodes[i].nodeType == 3 && curParent.childNodes[i].data.length)
+            textNodes.push(curParent.childNodes[i]);
+        else
+            textNodes = getTextNodes(curParent.childNodes[i],textNodes);
+
+    }
+    return textNodes;
+
+}
+
+1;
